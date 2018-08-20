@@ -9,6 +9,8 @@ import (
 	"sync"
 	"text/template"
 
+	"github.com/stretchr/objx"
+
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/gplus"
 )
@@ -23,6 +25,12 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.once.Do(func() {
 		t.template = template.Must(template.ParseFiles(filepath.Join("templates", t.fileName)))
 	})
+	data := map[string]interface{}{
+		"Host": r.Host,
+	}
+	if authCookie, err := r.Cookie("auth"); err == nil {
+		data["UserData"] = objx.MustFromBase64(authCookie.Value)
+	}
 	t.template.Execute(w, r)
 }
 

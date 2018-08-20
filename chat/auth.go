@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/k0kubun/pp"
+	"github.com/stretchr/objx"
+
+	"github.com/markbates/goth"
 
 	"github.com/markbates/goth/gothic"
 )
@@ -46,7 +48,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		// try to get the user without re-authenticating
 		if gothUser, err := gothic.CompleteUserAuth(w, r); err == nil {
 			// do some thing after login
-			pp.Println(gothUser.AvatarURL)
+			setCookie(gothUser, w)
 		} else {
 			gothic.BeginAuthHandler(w, r)
 		}
@@ -56,11 +58,24 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, err)
 			return
 		}
-		pp.Println(user.AvatarURL)
+		setCookie(user, w)
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Auth action %s not supported", action)
 	}
+}
+
+func setCookie(userInfo goth.User, w http.ResponseWriter) {
+	authCookieValue := objx.New(map[string]interface{}{
+		"name": userInfo.Name,
+	}).MustBase64()
+	http.SetCookie(w, &http.Cookie{
+		Name:  "auth",
+		Value: authCookieValue,
+		Path:  "/",
+	})
+	w.Header().Set("Location", "/chat")
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 // MustAuth is a Auth hanlder wrapper
