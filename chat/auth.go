@@ -80,6 +80,7 @@ func setCookie(userInfo goth.User, w http.ResponseWriter) {
 	authCookieValue := objx.New(map[string]interface{}{
 		"name":       userInfo.Name,
 		"avatar_url": userInfo.AvatarURL,
+		"email":      userInfo.Email,
 	}).MustBase64()
 	http.SetCookie(w, &http.Cookie{
 		Name:  "auth",

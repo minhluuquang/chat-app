@@ -49,7 +49,7 @@ func main() {
 		gplus.New(googleClientID, googleSecret, googleRedirectURL),
 	)
 
-	r := newRoom()
+	r := newRoom(UseGravatarAvatar)
 	http.Handle("/chat", MustAuth(&templateHandler{fileName: "chat.html"}))
 	http.Handle("/login", &templateHandler{fileName: "login.html"})
 	http.HandleFunc("/logout", logoutHandler)
