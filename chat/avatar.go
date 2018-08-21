@@ -1,11 +1,11 @@
 package main
 
 import (
-	"crypto/md5"
 	"errors"
-	"fmt"
-	"io"
-	"strings"
+	"io/ioutil"
+	"path"
+	"path/filepath"
+	"runtime"
 )
 
 var (
@@ -38,15 +38,43 @@ type GravatarAvatar struct{}
 var UseGravatarAvatar GravatarAvatar
 
 func (GravatarAvatar) GetAvatarURL(c *client) (string, error) {
-	email, ok := c.userData["email"]
+	userID, ok := c.userData["user_id"]
 	if !ok {
 		return "", ErrNoAvatarURL
 	}
-	emailStr, ok := email.(string)
+	userIDStr, ok := userID.(string)
 	if !ok {
 		return "", ErrNoAvatarURL
 	}
-	m := md5.New()
-	io.WriteString(m, strings.ToLower(emailStr))
-	return fmt.Sprintf("//www.gravatar.com/avatar/%x", m.Sum(nil)), nil
+	return "//www.gravatar.com/avatar/" + userIDStr, nil
+}
+
+type UploadAvatar struct{}
+
+var UserUploadAvatar UploadAvatar
+
+func (UploadAvatar) GetAvatarURL(c *client) (string, error) {
+	_, b, _, _ := runtime.Caller(0)
+	basepath := filepath.Dir(filepath.Dir(b))
+	userID, ok := c.userData["user_id"]
+	if !ok {
+		return "", ErrNoAvatarURL
+	}
+	userIDStr, ok := userID.(string)
+	if !ok {
+		return "", ErrNoAvatarURL
+	}
+	files, err := ioutil.ReadDir(filepath.Join(basepath, "/avatars"))
+	if err != nil {
+		return "", ErrNoAvatarURL
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if match, _ := path.Match(userIDStr+"*", file.Name()); match {
+			return "/avatars/" + file.Name(), nil
+		}
+	}
+	return "", ErrNoAvatarURL
 }
