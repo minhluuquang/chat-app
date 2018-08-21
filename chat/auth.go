@@ -65,9 +65,21 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "auth",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	w.Header().Set("Location", "/login")
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
 func setCookie(userInfo goth.User, w http.ResponseWriter) {
 	authCookieValue := objx.New(map[string]interface{}{
-		"name": userInfo.Name,
+		"name":       userInfo.Name,
+		"avatar_url": userInfo.AvatarURL,
 	}).MustBase64()
 	http.SetCookie(w, &http.Cookie{
 		Name:  "auth",
