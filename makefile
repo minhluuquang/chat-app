@@ -3,5 +3,5 @@
 build:
 	go build -o server chat/*.go
 
-dev:
-	./server
+dev: build
+	./server; rm server

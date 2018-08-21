@@ -9,10 +9,9 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/stretchr/objx"
-
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/gplus"
+	"github.com/stretchr/objx"
 )
 
 type templateHandler struct {
@@ -31,7 +30,7 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if authCookie, err := r.Cookie("auth"); err == nil {
 		data["UserData"] = objx.MustFromBase64(authCookie.Value)
 	}
-	t.template.Execute(w, r)
+	t.template.Execute(w, data)
 }
 
 var (
@@ -41,7 +40,6 @@ var (
 )
 
 func main() {
-
 	log.Println("Start server")
 	var addr = flag.String("addr", ":8080", "address of application")
 	flag.Parse()
