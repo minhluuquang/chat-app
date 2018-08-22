@@ -7,11 +7,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/stretchr/objx"
-
 	"github.com/markbates/goth"
-
 	"github.com/markbates/goth/gothic"
+	"github.com/stretchr/objx"
 )
 
 type authHandler struct {
